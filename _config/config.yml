@@ -1,0 +1,13 @@
+---
+Name: goldfinch-cli-supplier
+---
+SilverStripe\Dev\DevelopmentAdmin:
+  registered_controllers:
+    cli-supplier:
+      controller: Goldfinch\CLISupplier\Controllers\CLISupplierController
+      links:
+        cli-supplier: 'CLI supplier'
+
+SilverStripe\Control\Director:
+  rules:
+    'dev/cli-supplier/$Action': Goldfinch\CLISupplier\Controllers\CLISupplierController
