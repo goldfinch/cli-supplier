@@ -1,0 +1,6 @@
+---
+Name: app-{{ class }}
+After: "goldfinch/cli-supplier"
+---
+Goldfinch\CLISupplier\Controllers\CLISupplierController:
+  registered_supplies:

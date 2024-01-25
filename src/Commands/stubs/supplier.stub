@@ -1,0 +1,11 @@
+<?php
+{{ namespace }}
+use Goldfinch\CLISupplier\CLISupplier;
+
+class {{ class }}Supplier implements CLISupplier
+{
+    public static function run()
+    {
+        //
+    }
+}

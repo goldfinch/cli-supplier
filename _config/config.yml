@@ -7,7 +7,3 @@ SilverStripe\Dev\DevelopmentAdmin:
       controller: Goldfinch\CLISupplier\Controllers\CLISupplierController
       links:
         cli-supplier: 'CLI supplier'
-
-SilverStripe\Control\Director:
-  rules:
-    'dev/cli-supplier/$Action': Goldfinch\CLISupplier\Controllers\CLISupplierController
