@@ -51,7 +51,8 @@ class CLISupplierController extends Controller
         }
 
         if (isset($supplier) && is_string($supplier) && is_subclass_of($supplier, CLISupplier::class)) {
-            return json_encode($supplier::run());
+
+            return json_encode($supplier::run(json_decode($request->getVar('args'))));
         }
 
         $msg = 'Error: no supplier registered in ' . static::class . ' for: ' . $supply;

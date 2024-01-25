@@ -4,5 +4,5 @@ namespace Goldfinch\CLISupplier;
 
 interface CLISupplier
 {
-    public static function run();
+    public static function run(...$args);
 }

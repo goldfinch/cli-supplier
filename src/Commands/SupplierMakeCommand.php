@@ -1,6 +1,6 @@
 <?php
 
-namespace Goldfinch\Mill\Commands;
+namespace Goldfinch\CLISupplier\Commands;
 
 use Symfony\Component\Finder\Finder;
 use Goldfinch\Taz\Console\GeneratorCommand;
@@ -17,7 +17,7 @@ class SupplierMakeCommand extends GeneratorCommand
 
     protected $path = '[psr4]/Console/Suppliers';
 
-    protected $type = 'mill';
+    protected $type = 'supplier';
 
     protected $stub = './stubs/supplier.stub';
 
@@ -26,9 +26,15 @@ class SupplierMakeCommand extends GeneratorCommand
     protected function execute($input, $output): int
     {
         $supplierName = $input->getArgument('name');
-        $target = $input->getArgument('target');
+        $shortname = $input->getArgument('shortname');
 
-        if (!$this->setMillInConfig($supplierName, $target)) {
+        if (!$shortname) {
+            $shortname = strtolower($supplierName);
+        }
+
+        $supplierName = 'App\Console\Suppliers\\' . $supplierName . $this->prefix; // TODO
+
+        if (!$this->setSupplierInConfig($supplierName, $shortname)) {
             // create config
 
             $command = $this->getApplication()->find('vendor:cli-supplier:config');
@@ -40,7 +46,7 @@ class SupplierMakeCommand extends GeneratorCommand
             $greetInput = new ArrayInput($arguments);
             $returnCode = $command->run($greetInput, $output);
 
-            $this->setMillInConfig($supplierName, $target);
+            $this->setSupplierInConfig($supplierName, $shortname);
         }
 
         parent::execute($input, $output);
@@ -48,7 +54,7 @@ class SupplierMakeCommand extends GeneratorCommand
         return Command::SUCCESS;
     }
 
-    private function setMillInConfig($supplierName, $target)
+    private function setSupplierInConfig($supplierName, $shortname)
     {
         $rewritten = false;
 
@@ -66,9 +72,16 @@ class SupplierMakeCommand extends GeneratorCommand
 
                 $ucfirst = ucfirst($supplierName);
 
+                if ($shortname) {
+                    $supplierLine = $shortname.': '.$supplierName;
+                } else {
+                    // not reachable at the moment as we modifying $shortname if it's not presented
+                    $supplierLine = '- ' . $supplierName;
+                }
+
                 $newContent = $this->addToLine(
                     $file->getPathname(),
-                    'registered_supplies:','    '.$supplierName.': '.$target,
+                    'registered_supplies:','    '.$supplierLine,
                 );
 
                 file_put_contents($file->getPathname(), $newContent);
@@ -80,42 +93,17 @@ class SupplierMakeCommand extends GeneratorCommand
         return $rewritten;
     }
 
-    // protected function getArguments()
-    // {
-    //     return [
-    //         [
-    //             'name',
-    //             InputArgument::REQUIRED,
-    //             'The name of the ' . strtolower($this->type),
-    //         ],
-    //         [
-    //             'natargetme',
-    //             InputArgument::REQUIRED,
-    //             'The target class of the ' . strtolower($this->type),
-    //         ],
-    //     ];
-    // }
-
-    // protected function promptForMissingArgumentsUsing()
-    // {
-    //     return [
-    //         'name' => 'What should the ' . strtolower($this->type) . ' be named?',
-    //         'target' => 'What is the target of ' . strtolower($this->type) . '? Use full namespace path to the class',
-    //     ];
-    // }
-
     public function configure(): void
     {
         $this->addArgument(
             'name',
             InputArgument::REQUIRED,
-            'The target class of the ' . strtolower($this->type)
+            'The name class of the ' . strtolower($this->type)
        );
 
        $this->addArgument(
-            'target',
-            InputArgument::REQUIRED,
-            'What is the target of ' . strtolower($this->type) . '? Use full namespace path to the class'
+            'shortname',
+            InputArgument::OPTIONAL,
        );
     }
 }

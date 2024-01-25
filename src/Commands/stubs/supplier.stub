@@ -4,7 +4,7 @@ use Goldfinch\CLISupplier\CLISupplier;
 
 class {{ class }}Supplier implements CLISupplier
 {
-    public static function run()
+    public static function run(...$args)
     {
         //
     }
