@@ -20,7 +20,7 @@ class SupplierMakeCommand extends GeneratorCommand
 
     protected $stub = './stubs/supplier.stub';
 
-    protected $prefix = 'Supplier';
+    protected $suffix = 'Supplier';
 
     protected function execute($input, $output): int
     {
@@ -32,7 +32,7 @@ class SupplierMakeCommand extends GeneratorCommand
 
         $nameInput = $this->getAttrName($input);
 
-        $shortName = $this->askClassNameQuestion('What [short name] this supplier need to be called by (eg: ' . strtolower($nameInput) . ')', $input, $output, '/^([A-z0-9\_-]+)$/', 'Name can contains letter, numbers, underscore and dash');
+        $shortName = $this->askClassNameQuestion('What [short name] this supplier need to be called by? (eg: ' . strtolower($nameInput) . ')', $input, $output, '/^([A-z0-9\_-]+)$/', 'Name can contains letter, numbers, underscore and dash');
 
         // find config
         $config = $this->findYamlConfigFileByName('app-cli-supplier');
