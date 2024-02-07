@@ -2,11 +2,10 @@
 
 namespace Goldfinch\CLISupplier\Commands;
 
-use Symfony\Component\Finder\Finder;
+use Goldfinch\Taz\Services\InputOutput;
 use Goldfinch\Taz\Console\GeneratorCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Input\InputArgument;
 
 #[AsCommand(name: 'make:cli-supplier')]
 class SupplierMakeCommand extends GeneratorCommand
@@ -25,89 +24,40 @@ class SupplierMakeCommand extends GeneratorCommand
 
     protected function execute($input, $output): int
     {
-        $supplierName = $input->getArgument('name');
-        $shortname = $input->getArgument('shortname');
+        $state = parent::execute($input, $output);
 
-        if (!$shortname) {
-            $shortname = strtolower($supplierName);
+        if ($state === false) {
+            return Command::FAILURE;
         }
 
-        $supplierName = 'App\Console\Suppliers\\' . $supplierName . $this->prefix; // TODO
+        $nameInput = $this->getAttrName($input);
 
-        if (!$this->setSupplierInConfig($supplierName, $shortname)) {
-            // create config
+        $shortName = $this->askClassNameQuestion('What [short name] this supplier need to be called by (eg: ' . strtolower($nameInput) . ')', $input, $output, '/^([A-z0-9\_-]+)$/', 'Name can contains letter, numbers, underscore and dash');
+
+        // find config
+        $config = $this->findYamlConfigFileByName('app-cli-supplier');
+
+        // create new config if not exists
+        if (!$config) {
 
             $command = $this->getApplication()->find('vendor:cli-supplier:config');
+            $command->run(new ArrayInput(['name' => 'cli-supplier']), $output);
 
-            $arguments = [
-                'name' => 'cli-supplier',
-            ];
-
-            $greetInput = new ArrayInput($arguments);
-            $returnCode = $command->run($greetInput, $output);
-
-            $this->setSupplierInConfig($supplierName, $shortname);
+            $config = $this->findYamlConfigFileByName('app-cli-supplier');
         }
 
-        parent::execute($input, $output);
+        // update config
+        $this->updateYamlConfig(
+            $config,
+            'Goldfinch\CLISupplier\Controllers\CLISupplierController' . '.registered_supplies.' . $shortName,
+            $this->getNamespaceClass($input)
+        );
+
+        if ($state !== false) {
+            $io = new InputOutput($input, $output);
+            $io->info('To refresh supplier list you might need to run [php taz dev/build]');
+        }
 
         return Command::SUCCESS;
-    }
-
-    private function setSupplierInConfig($supplierName, $shortname)
-    {
-        $rewritten = false;
-
-        $finder = new Finder();
-        $files = $finder->in(BASE_PATH . '/app/_config')->files()->contains('Goldfinch\CLISupplier\Controllers\CLISupplierController:');
-
-        foreach ($files as $file) {
-
-            // stop after first replacement
-            if ($rewritten) {
-                break;
-            }
-
-            if (strpos($file->getContents(), 'registered_supplies') !== false) {
-
-                $ucfirst = ucfirst($supplierName);
-
-                if ($shortname) {
-                    $supplierLine = $shortname.': '.$supplierName;
-                } else {
-                    // not reachable at the moment as we modifying $shortname if it's not presented
-                    $supplierLine = '- ' . $supplierName;
-                }
-
-                $newContent = $this->addToLine(
-                    $file->getPathname(),
-                    'registered_supplies:','    '.$supplierLine,
-                );
-
-                file_put_contents($file->getPathname(), $newContent);
-
-                $rewritten = true;
-            }
-        }
-
-        return $rewritten;
-    }
-
-    protected function configure(): void
-    {
-        $this
-            ->setDescription($this->description)
-            ->setHelp($this->help);
-
-        $this->addArgument(
-            'name',
-            InputArgument::REQUIRED,
-            'The name class of the ' . strtolower($this->type)
-       );
-
-       $this->addArgument(
-            'shortname',
-            InputArgument::OPTIONAL,
-       );
     }
 }
