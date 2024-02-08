@@ -37,11 +37,15 @@ class SupplierMakeCommand extends GeneratorCommand
         // find config
         $config = $this->findYamlConfigFileByName('app-cli-supplier');
 
-        // create new config if not exists
         if (!$config) {
 
-            $command = $this->getApplication()->find('vendor:cli-supplier:config');
-            $command->run(new ArrayInput(['name' => 'cli-supplier']), $output);
+            $command = $this->getApplication()->find('make:config');
+            $command->run(new ArrayInput([
+                'name' => 'cli-supplier',
+                '--plain' => true,
+                '--after' => 'goldfinch/cli-supplier',
+                '--nameprefix' => 'app-',
+            ]), $output);
 
             $config = $this->findYamlConfigFileByName('app-cli-supplier');
         }
