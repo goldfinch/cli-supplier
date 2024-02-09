@@ -1,6 +1,6 @@
 {
     "name": "goldfinch/cli-supplier",
-    "description": "CLI supplier for Silverstripe",
+    "description": "CLI Supplier is an extra interface for Taz commands that creates a bridge to communicate with Silverstripe core in CLI",
     "type": "silverstripe-vendormodule",
     "keywords": [
         "silverstripe",
